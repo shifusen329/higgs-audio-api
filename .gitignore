@@ -190,6 +190,7 @@ cython_debug/
 download
 .DS_Store
 *entry.py
+voices/
 
 # Pytorch
 torch_compile_debug/

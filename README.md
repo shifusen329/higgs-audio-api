@@ -93,6 +93,20 @@ uv pip install -e .
 For advanced usage with higher throughput, we also built OpenAI compatible API server backed by vLLM engine for you to use.
 Please refer to [examples/vllm](./examples/vllm) for more details.
 
+### Option 6: OpenAI-Compatible TTS Server
+
+For easy integration with existing applications, we provide an OpenAI-compatible TTS server with voice cloning support.
+
+```bash
+# Start the server
+./higgs-audio.sh
+
+# Or with custom options
+./higgs-audio.sh --port 8080 --voices-dir /path/to/voices
+```
+
+See [OpenAI TTS Server](#openai-compatible-tts-server-1) section below for full documentation.
+
 
 ## Usage
 
@@ -212,6 +226,123 @@ python3 examples/generation.py \
 --seed 12345 \
 --out_path generation.wav
 ```
+
+
+## OpenAI-Compatible TTS Server
+
+We provide a standalone FastAPI server with OpenAI-compatible `/v1/audio/speech` endpoint for easy integration with existing applications.
+
+### Features
+
+- **OpenAI API Compatible**: Drop-in replacement for OpenAI's TTS API
+- **Voice Cloning**: Uses reference audio + transcript pairs from `voices/` directory
+- **Text Preprocessing**: Automatic expansion of abbreviations, units, and symbols
+- **Lazy Loading**: Model loads on first request, unloads after idle timeout
+- **Multiple Formats**: Supports WAV and MP3 output
+
+### Quick Start
+
+```bash
+# Start the server
+./higgs-audio.sh
+
+# Test health endpoint
+curl http://localhost:8005/health
+
+# List available voices
+curl http://localhost:8005/v1/audio/voices
+
+# Generate speech
+curl -X POST http://localhost:8005/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{"input": "Hello, world!", "voice": "amanda"}' \
+  --output speech.wav
+
+# Play the output
+aplay speech.wav
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/audio/speech` | POST | Generate speech from text |
+| `/v1/audio/voices` | GET | List available voices |
+| `/v1/audio/voices/{id}` | GET | Get voice details |
+| `/v1/audio/voices/{id}/sample` | GET | Stream reference audio |
+| `/health` | GET | Health check |
+
+### Request Parameters
+
+```json
+{
+  "model": "higgs-audio",
+  "input": "Text to synthesize",
+  "voice": "amanda",
+  "response_format": "wav",
+  "temperature": 1.0,
+  "top_p": 0.95,
+  "top_k": 50,
+  "max_new_tokens": 2048
+}
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HIGGS_PORT` | `8005` | Server port |
+| `HIGGS_VOICES_DIR` | `./voices` | Voice prompts directory |
+| `HIGGS_MODEL_PATH` | `bosonai/higgs-audio-v2-generation-3B-base` | Model path |
+| `HIGGS_IDLE_TIMEOUT` | `300` | Unload model after N seconds idle |
+
+### Adding Custom Voices
+
+Add voice prompts to the `voices/` directory as pairs of files:
+- `{voice_id}.wav` - Reference audio (5-30 seconds recommended)
+- `{voice_id}.txt` - Transcript of the reference audio
+
+Example:
+```
+voices/
+├── amanda.wav
+├── amanda.txt
+├── custom_voice.wav
+└── custom_voice.txt
+```
+
+### Running as a Service
+
+Install the systemd service for production deployments:
+
+```bash
+# Copy and edit the service file
+sudo cp higgs-audio.service /etc/systemd/system/
+sudo nano /etc/systemd/system/higgs-audio.service  # Update paths as needed
+
+# Enable and start the service
+sudo systemctl daemon-reload
+sudo systemctl enable higgs-audio
+sudo systemctl start higgs-audio
+
+# Check status
+sudo systemctl status higgs-audio
+sudo journalctl -u higgs-audio -f
+```
+
+### Text Preprocessing
+
+The server automatically preprocesses input text for better TTS output:
+
+| Input | Output |
+|-------|--------|
+| `Dr. Smith` | `Doctor Smith` |
+| `72°F` | `72 degrees Fahrenheit` |
+| `e.g.` | `for example` |
+| `$100` | `100 dollars` |
+| `&amp;` | `and` |
+
+Preprocessing rules are configured in `boson_multimodal/serve/config/pre_process_map.yaml`.
 
 
 ## Technical Details

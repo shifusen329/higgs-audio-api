@@ -1,0 +1,39 @@
+[Unit]
+Description=Higgs Audio OpenAI-compatible TTS Server
+Documentation=https://github.com/boson-ai/higgs-audio
+After=network.target
+
+[Service]
+Type=simple
+User=administrator
+Group=administrator
+
+# Working directory - update this to your installation path
+WorkingDirectory=/home/administrator/workspace2/higgs-audio
+
+# Environment variables
+Environment="HIGGS_PORT=8005"
+Environment="HIGGS_VOICES_DIR=/home/administrator/workspace2/higgs-audio/voices"
+Environment="HIGGS_MODEL_PATH=bosonai/higgs-audio-v2-generation-3B-base"
+Environment="HIGGS_IDLE_TIMEOUT=300"
+
+# GPU configuration (uncomment and modify as needed)
+# Environment="CUDA_VISIBLE_DEVICES=0"
+
+# Virtual environment activation and server start
+ExecStart=/bin/bash -c 'source /home/administrator/workspace2/higgs-audio/.venv/bin/activate && exec python -m boson_multimodal.serve.openai_tts_server'
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Resource limits
+LimitNOFILE=65536
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=higgs-audio
+
+[Install]
+WantedBy=multi-user.target
