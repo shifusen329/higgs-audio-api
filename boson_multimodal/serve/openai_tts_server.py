@@ -298,9 +298,10 @@ async def _ensure_tts_engine():
 async def _idle_model_reaper():
     """Background task to unload idle model."""
     timeout = int(os.getenv("HIGGS_IDLE_TIMEOUT", str(MODEL_IDLE_TIMEOUT_SECONDS)))
+    logger.info(f"Idle model reaper started with timeout={timeout}s, check_interval={MODEL_IDLE_CHECK_INTERVAL_SECONDS}s")
 
-    try:
-        while True:
+    while True:
+        try:
             await asyncio.sleep(MODEL_IDLE_CHECK_INTERVAL_SECONDS)
 
             engine_to_release = None
@@ -312,6 +313,7 @@ async def _idle_model_reaper():
                     continue
 
                 if app.state.inference_lock.locked():
+                    logger.debug("Skipping unload check - inference in progress")
                     continue
 
                 elapsed = time.monotonic() - last_used
@@ -327,12 +329,24 @@ async def _idle_model_reaper():
                 app.state.last_usage = None
 
             if engine_to_release is not None:
+                # Explicitly delete model components to release GPU memory
+                if hasattr(engine_to_release, 'model'):
+                    del engine_to_release.model
+                if hasattr(engine_to_release, 'audio_tokenizer'):
+                    del engine_to_release.audio_tokenizer
                 del engine_to_release
+                import gc
+                gc.collect()
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
+                logger.info("Model unloaded and GPU memory cleared")
 
-    except asyncio.CancelledError:
-        pass
+        except asyncio.CancelledError:
+            logger.info("Idle model reaper cancelled")
+            break
+        except Exception as e:
+            logger.error(f"Error in idle model reaper: {e}")
+            # Continue running despite errors
 
 
 app = FastAPI(
