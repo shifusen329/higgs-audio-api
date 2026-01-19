@@ -318,6 +318,8 @@ def load_higgs_audio_tokenizer(tokenizer_name_or_path, device="cuda"):
     config_path = os.path.join(tokenizer_path, "config.json")
     model_path = os.path.join(tokenizer_path, "model.pth")
     config = json.load(open(config_path))
+    # Filter out HuggingFace metadata keys not expected by the tokenizer
+    config = {k: v for k, v in config.items() if not k.startswith("_")}
     model = HiggsAudioTokenizer(
         **config,
         device=device,
