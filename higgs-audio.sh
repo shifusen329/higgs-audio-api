@@ -21,7 +21,7 @@ cd "$SCRIPT_DIR"
 # Default values
 PORT="${HIGGS_PORT:-8005}"
 VOICES_DIR="${HIGGS_VOICES_DIR:-$SCRIPT_DIR/voices}"
-MODEL_PATH="${HIGGS_MODEL_PATH:-bosonai/higgs-audio-v2-generation-3B-base}"
+MODEL_PATH="${HIGGS_MODEL_PATH:-/mnt/fileshare2/AI/models/higgs-audio-v2-generation-3B-base}"
 IDLE_TIMEOUT="${HIGGS_IDLE_TIMEOUT:-300}"
 HF_HOME="${HF_HOME:-/mnt/cache/huggingface}"
 
@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
             VOICES_DIR="$2"
             shift 2
             ;;
-        --model-path)
+        --model-path|--local-dir)
             MODEL_PATH="$2"
             shift 2
             ;;
@@ -53,6 +53,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --port PORT           Server port (default: 8005)"
             echo "  --voices-dir DIR      Voice prompts directory (default: ./voices)"
             echo "  --model-path PATH     Model path or HuggingFace ID"
+            echo "  --local-dir DIR       Alias for --model-path"
             echo "  --idle-timeout SECS   Unload model after N seconds idle (default: 300)"
             echo "  -h, --help            Show this help message"
             echo ""

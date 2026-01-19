@@ -251,7 +251,7 @@ class HiggsAudioServeEngine:
             logger.info(f"Loading whisper processor")
             whisper_processor = AutoProcessor.from_pretrained(
                 "openai/whisper-large-v3-turbo",
-                trust_remote=True,
+                trust_remote_code=True,
                 device=self.device,
             )
         else:
