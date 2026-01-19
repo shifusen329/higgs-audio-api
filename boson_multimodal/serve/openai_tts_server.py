@@ -263,12 +263,21 @@ def _load_tts_engine():
     device = _detect_device()
     model_path = os.getenv("HIGGS_MODEL_PATH", DEFAULT_MODEL_PATH)
 
+    # Audio tokenizer is a separate model from the main LLM
+    # Check for local subdirectory first, then env var, then HuggingFace
+    local_tokenizer_path = os.path.join(model_path, "higgs-audio-v2-tokenizer")
+    if os.path.exists(local_tokenizer_path):
+        audio_tokenizer_path = local_tokenizer_path
+    else:
+        audio_tokenizer_path = os.getenv("HIGGS_AUDIO_TOKENIZER_PATH", "bosonai/higgs-audio-v2-tokenizer")
+
     logger.info(f"Loading Higgs Audio model from {model_path} on device: {device}")
+    logger.info(f"Loading audio tokenizer from {audio_tokenizer_path}")
     print(f"[Higgs Audio] Loading model from {model_path} on device: {device}")
 
     engine = HiggsAudioServeEngine(
         model_name_or_path=model_path,
-        audio_tokenizer_name_or_path=model_path,
+        audio_tokenizer_name_or_path=audio_tokenizer_path,
         device=device,
     )
 
