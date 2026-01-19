@@ -16,6 +16,7 @@ Environment="HIGGS_PORT=8005"
 Environment="HIGGS_VOICES_DIR=/home/administrator/workspace2/higgs-audio/voices"
 Environment="HIGGS_MODEL_PATH=bosonai/higgs-audio-v2-generation-3B-base"
 Environment="HIGGS_IDLE_TIMEOUT=300"
+Environment="HF_HOME=/mnt/cache/huggingface"
 
 # GPU configuration (uncomment and modify as needed)
 # Environment="CUDA_VISIBLE_DEVICES=0"

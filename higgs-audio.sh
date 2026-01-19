@@ -23,6 +23,7 @@ PORT="${HIGGS_PORT:-8005}"
 VOICES_DIR="${HIGGS_VOICES_DIR:-$SCRIPT_DIR/voices}"
 MODEL_PATH="${HIGGS_MODEL_PATH:-bosonai/higgs-audio-v2-generation-3B-base}"
 IDLE_TIMEOUT="${HIGGS_IDLE_TIMEOUT:-300}"
+HF_HOME="${HF_HOME:-/mnt/cache/huggingface}"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -77,6 +78,7 @@ export HIGGS_PORT="$PORT"
 export HIGGS_VOICES_DIR="$VOICES_DIR"
 export HIGGS_MODEL_PATH="$MODEL_PATH"
 export HIGGS_IDLE_TIMEOUT="$IDLE_TIMEOUT"
+export HF_HOME="$HF_HOME"
 
 # Check if voices directory exists
 if [[ ! -d "$VOICES_DIR" ]]; then
@@ -101,6 +103,7 @@ echo "Port:         $PORT"
 echo "Voices Dir:   $VOICES_DIR"
 echo "Model:        $MODEL_PATH"
 echo "Idle Timeout: ${IDLE_TIMEOUT}s"
+echo "HF Cache:     $HF_HOME"
 echo "=========================================="
 echo ""
 
